@@ -1,8 +1,9 @@
 langgraph>=0.2.0
 langchain>=0.3.0
 langchain-openai>=0.1.0
-tigergraph-mcp>=0.1.0
-pytigergraph>=1.5.0
+langchain-groq>=0.1.0
+groq>=0.9.0
+pytigergraph>=2.0.0
 streamlit>=1.38.0
 pyvis>=0.3.2
 pydantic>=2.8.0
