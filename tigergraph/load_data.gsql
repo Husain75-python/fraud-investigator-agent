@@ -1,0 +1,18 @@
+USE GRAPH Transaction_Fraud
+
+# Define Loading Job for IEEE-CIS Dataset
+CREATE LOADING JOB load_ieee_fraud_data FOR GRAPH Transaction_Fraud{
+    DEFINE FILENAME tx_file = "/path/to/data/raw/train_transaction.csv";
+    DEFINE FILENAME dev_file = "/path/to/data/raw/train_identity.csv";
+
+    # Load Transactions & Customer Vertices
+    LOAD tx_file TO VERTEX Transaction VALUES($0, $1, $2, $3) USING SEPARATOR=",", HEADER="true";
+    LOAD tx_file TO VERTEX Customer VALUES($4) USING SEPARATOR=",", HEADER="true";
+    LOAD tx_file TO EDGE OWNS_ACCOUNT VALUES($4, $0) USING SEPARATOR=",", HEADER="true";
+
+    # Load Device Vertices & Relationships
+    LOAD dev_file TO VERTEX Device VALUES($0, $1) USING SEPARATOR=",", HEADER="true";
+    LOAD dev_file TO EDGE ASSOCIATED_DEVICE VALUES($0, $0) USING SEPARATOR=",", HEADER="true";
+}
+
+RUN LOADING JOB load_ieee_fraud_data

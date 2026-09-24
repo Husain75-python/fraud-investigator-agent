@@ -1,0 +1,11 @@
+﻿.venv/
+__pycache__/
+*.pyc
+.env
+data/benchmark/*.json
+outputs/benchmark_results/*.json
+outputs/sars/*.txt
+!outputs/sars/.gitkeep
+!data/policy/bank_policies.txt
+!data/raw/sample_transactions.csv
+.DS_Store

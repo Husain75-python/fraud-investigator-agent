@@ -1,0 +1,42 @@
+USE GRAPH Transaction_Fraud 
+
+# 1. Multi-Account Device Sharing Pattern Query
+CREATE QUERY detect_shared_device_ring(STRING target_tx_id) FOR GRAPH Transaction_Fraud {
+    ListAccum<STRING> @@connected_customers;
+    ListAccum<STRING> @@devices_used;
+    INT customer_count = 0;
+
+    Tx = {Transaction.*};
+    Tx = SELECT t FROM Tx:t WHERE t.id == target_tx_id;
+
+    # Traverse Transaction -> Device
+    Devs = SELECT d FROM Tx:t -(ASSOCIATED_DEVICE)-> Device:d
+           ACCUM @@devices_used += d.id;
+
+    # Traverse Device -> Connected Customers
+    Custs = SELECT c FROM Devs:d <-(SHARED_DEVICE)- Customer:c
+            ACCUM @@connected_customers += c.id;
+
+    customer_count = @@connected_customers.size();
+
+    PRINT customer_count, @@devices_used, @@connected_customers;
+}
+
+# 2. Velocity Check: High Frequency Transactions from Same Customer
+CREATE QUERY check_customer_velocity(STRING customer_id, INT time_window_seconds) FOR GRAPH Transaction_Fraud {
+    SumAccum<INT> @@tx_count = 0;
+    SumAccum<FLOAT> @@total_amount = 0.0;
+
+    Cust = {Customer.*};
+    Cust = SELECT c FROM Cust:c WHERE c.id == customer_id;
+
+    Txs = SELECT t FROM Cust:c -(OWNS_ACCOUNT)-> Transaction:t
+          ACCUM 
+            @@tx_count += 1,
+            @@total_amount += t.amount;
+
+    PRINT @@tx_count, @@total_amount;
+}
+
+# Install all compiled GSQL queries
+INSTALL QUERY detect_shared_device_ring, check_customer_velocity
